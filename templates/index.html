@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tomato Leaf Scan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+            50% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.15); }
+        }
+        @keyframes floatIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes slideFade {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateY(10px); }
+        }
+        @keyframes ripple {
+            to { transform: scale(1.5); opacity: 0; }
+        }
+        .animate-floatIn {
+            animation: floatIn 0.5s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+        }
+        .animate-slideFade {
+            animation: slideFade 0.4s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+        }
+        .animate-fadeOut {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+        .animate-ripple {
+            animation: ripple 0.6s ease-out forwards;
+        }
+        .hover-pop {
+            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.3, 1.2), box-shadow 0.2s ease;
+        }
+        .hover-pop:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .btn-gradient {
+            background: linear-gradient(135deg, #22c55e, #10b981);
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+        .btn-gradient:hover {
+            background: linear-gradient(135deg, #16a34a, #059669);
+            transform: translateY(-1px);
+        }
+        .drop-zone {
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.3, 1);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-green-50 to-teal-50 flex items-center justify-center p-4 font-sans antialiased">
+    <div class="container max-w-sm w-full glass rounded-xl p-6 shadow-sm animate-floatIn border border-white/30">
+        <div class="text-center mb-6">
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 animate-pulseGlow">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.5v15m7.5-7.5h-15"/>
+                </svg>
+            </div>
+            <h1 class="text-xl font-semibold text-gray-800">Leaf Scan</h1>
+            <p class="text-xs text-gray-500 mt-1">Instant tomato leaf disease detection</p>
+        </div>
+
+        <form id="uploadForm" method="post" enctype="multipart/form-data" class="space-y-4">
+            <div class="drop-zone relative border-2 border-dashed border-gray-200 rounded-lg p-5 cursor-pointer hover:border-green-300 glass">
+                <input type="file" class="opacity-0 absolute inset-0 w-full h-full cursor-pointer" id="file" name="file" accept="image/*" required>
+                <div class="text-center space-y-2">
+                    <svg class="mx-auto h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16l-4-4m0 0l4-4m-4 4h18"/>
+                    </svg>
+                    <p class="text-xs text-gray-600">Drop image or click to upload</p>
+                </div>
+            </div>
+
+            <div id="previewContainer" class="hidden text-center">
+                <div class="relative inline-block">
+                    <img id="previewImage" src="#" alt="Preview" class="max-w-full max-h-48 rounded-lg border border-gray-100 animate-slideFade">
+                    <button id="removePreviewBtn" type="button" class="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-sm hover:bg-gray-50">
+                        <svg class="h-3 w-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full btn-gradient text-white py-2 rounded-lg text-sm font-medium hover-pop animate-pulseGlow">
+                Scan Leaf
+                <svg class="w-4 h-4 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+        </form>
+
+        {% if error %}
+        <div id="errorAlert" class="mt-4 p-2 bg-red-50 text-red-600 rounded-lg text-xs animate-slideFade flex items-center">
+            <svg class="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            {{ error }}
+        </div>
+        {% endif %}
+
+        {% if image_path %}
+        <div id="uploadedImageContainer" class="mt-4 animate-slideFade">
+            <img src="{{ url_for('static', filename=image_path) }}" alt="Result" class="max-w-full max-h-48 mx-auto rounded-lg border border-gray-100">
+        </div>
+        {% endif %}
+
+        {% if prediction %}
+        <div id="resultContainer" class="mt-4 p-3 glass rounded-lg animate-slideFade border border-gray-100/30">
+            <div class="flex items-center space-x-1 mb-2">
+                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 13l4 4L19 7"/>
+                </svg>
+                <h4 class="text-xs font-medium text-gray-700">Scan Complete</h4>
+            </div>
+            <div class="space-y-1 text-xs">
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Condition</span>
+                    <span class="font-medium text-green-600">{{ prediction.replace('Tomato_', '').replace('_', ' ') }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Confidence</span>
+                    <span class="font-medium text-gray-700">{{ confidence }}</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('uploadForm');
+            const fileInput = document.getElementById('file');
+            const dropZone = document.querySelector('.drop-zone');
+            const previewContainer = document.getElementById('previewContainer');
+            const previewImage = document.getElementById('previewImage');
+            const removePreviewBtn = document.getElementById('removePreviewBtn');
+            const errorAlert = document.getElementById('errorAlert');
+            const uploadedImageContainer = document.getElementById('uploadedImageContainer');
+            const resultContainer = document.getElementById('resultContainer');
+
+            const resetForm = () => {
+                form.reset();
+                previewContainer?.classList.add('hidden');
+                dropZone?.classList.remove('border-green-400', 'bg-green-50');
+                previewImage.src = '#';
+            };
+
+            if (performance.getEntriesByType("navigation")[0]?.type === "reload") {
+                resetForm();
+                [uploadedImageContainer, resultContainer, errorAlert].forEach(el => {
+                    if (el) {
+                        el.classList.add('animate-fadeOut');
+                        setTimeout(() => el.remove(), 300);
+                    }
+                });
+            }
+
+            fileInput?.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        previewImage.src = ev.target.result;
+                        previewContainer.classList.remove('hidden');
+                        dropZone.classList.add('border-green-400', 'bg-green-50');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            removePreviewBtn?.addEventListener('click', () => {
+                previewContainer.classList.add('hidden');
+                fileInput.value = '';
+                dropZone.classList.remove('border-green-400', 'bg-green-50');
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone?.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('border-green-400', 'bg-green-50', 'animate-pulseGlow');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone?.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('border-green-400', 'bg-green-50', 'animate-pulseGlow');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

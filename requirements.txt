@@ -1,0 +1,9 @@
+tensorflow==2.13.0
+keras==2.13.1
+numpy>=1.19.2
+matplotlib>=3.3.2
+pillow>=8.0.0
+kaggle>=1.5.12
+scikit-learn>=0.24.0
+h5py>=2.10.0
+flask>=2.0.0
